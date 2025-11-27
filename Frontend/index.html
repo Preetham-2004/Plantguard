@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./src/assets/plant-grass-svgrepo-com.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PlantGuard</title>
+    <meta property="og:image" content="https://bolt.new/static/og_default.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://bolt.new/static/og_default.png">
+
+    <!-- Intro loader styling -->
+    <style>
+      /* Fullscreen loader container */
+      #intro-loader {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at top, #bbf7d0 0, #ecfeff 40%, #e0f2fe 100%);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        color: #064e3b;
+        transition: opacity 0.8s ease;
+      }
+
+      #intro-loader.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .intro-circle {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        border-radius: 999px;
+        border: 2px solid rgba(16, 185, 129, 0.4);
+        box-shadow:
+          0 0 30px rgba(16, 185, 129, 0.35),
+          0 0 60px rgba(45, 212, 191, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 30% 20%, #bbf7d0 0, transparent 55%);
+        animation: circle-spin 9s linear infinite;
+      }
+
+      .intro-dot {
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        border-radius: 999px;
+        background: #22c55e;
+        box-shadow: 0 0 18px rgba(34, 197, 94, 0.9);
+        top: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      .intro-leaf {
+        width: 36px;
+        height: 54px;
+        border-radius: 36px 36px 36px 0;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        transform-origin: 50% 80%;
+        transform: rotate(-35deg);
+        position: relative;
+        overflow: hidden;
+        animation:
+          leaf-breathe 3.2s ease-in-out infinite,
+          leaf-sway 4.4s ease-in-out infinite;
+      }
+
+      .intro-leaf::after {
+        content: '';
+        position: absolute;
+        inset: 5px 12px 5px 7px;
+        border-radius: 999px;
+        border-right: 1px solid rgba(240, 253, 244, 0.85);
+      }
+
+      .intro-text {
+        margin-top: 28px;
+        text-align: center;
+      }
+
+      .intro-greeting {
+        font-size: 1.4rem;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        margin-bottom: 6px;
+      }
+
+      .intro-sub {
+        font-size: 0.9rem;
+        color: #047857;
+      }
+
+      /* Keyframes */
+      @keyframes circle-spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      @keyframes leaf-breathe {
+        0%, 100% { transform: scale(1) rotate(-35deg); }
+        50%      { transform: scale(1.08) rotate(-35deg); }
+      }
+
+      @keyframes leaf-sway {
+        0%, 100% { transform: rotate(-35deg); }
+        50%      { transform: rotate(-25deg); }
+      }
+
+      @keyframes fadeGreeting {
+        0%   { opacity: 0; transform: translateY(4px); }
+        20%  { opacity: 1; transform: translateY(0); }
+        80%  { opacity: 1; transform: translateY(0); }
+        100% { opacity: 0; transform: translateY(-4px); }
+      }
+
+      .intro-greeting-anim {
+        animation: fadeGreeting 1.8s ease-in-out;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Intro loader (shows before React mounts) -->
+    <div id="intro-loader">
+      <div class="intro-circle">
+        <div class="intro-dot"></div>
+        <div class="intro-leaf"></div>
+      </div>
+      <div class="intro-text">
+        <div id="intro-greeting" class="intro-greeting intro-greeting-anim">
+          Hindi (नमस्ते)
+        </div>
+        <div class="intro-sub">
+          Saying hello across India before loading PlantGuard AI…
+        </div>
+      </div>
+    </div>
+
+    <div id="root"></div>
+
+    <script type="module" src="/src/main.tsx"></script>
+
+    <!-- Greeting & hide logic -->
+    <script>
+      (function () {
+        const greetings = [
+          'Hindi (नमस्ते)',
+          'Kannada (ನಮಸ್ಕಾರ)',
+          'Hello from PlantGuard AI!',
+        ];
+
+        let index = 0;
+        const greetingEl = document.getElementById('intro-greeting');
+        const loaderEl = document.getElementById('intro-loader');
+
+        if (!greetingEl || !loaderEl) return;
+
+        const perGreetingTime = 1100; 
+        const totalTime = greetings.length * perGreetingTime + 1100;
+
+        const interval = setInterval(() => {
+          index += 1;
+
+          if (index >= greetings.length) {
+            clearInterval(interval);
+            return;
+          }
+
+          greetingEl.textContent = greetings[index];
+
+          // retrigger text fade animation
+          greetingEl.classList.remove('intro-greeting-anim');
+          void greetingEl.offsetWidth; // force reflow
+          greetingEl.classList.add('intro-greeting-anim');
+        }, perGreetingTime);
+
+        // Hide loader only after all greetings finished
+        setTimeout(() => {
+          loaderEl.classList.add('hidden');
+          setTimeout(() => {
+            if (loaderEl && loaderEl.parentNode) {
+              loaderEl.parentNode.removeChild(loaderEl);
+            }
+          }, 900); // wait for fade-out transition
+        }, totalTime);
+      })();
+    </script>
+  </body>
+</html>
